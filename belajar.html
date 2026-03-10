@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Belajar Malam - Database</title>
+    <style>
+        /* CSS: Tampilan */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Tampilan Login & Daftar --- */
+        .auth-container {
+            background: #16213e;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #0f3460;
+        }
+
+        .auth-container h2 {
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #0f3460;
+            color: white;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c0354c;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .toggle-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .toggle-link a {
+            color: #e94560;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* --- Tampilan Jadwal Belajar (Dashboard) --- */
+        .dashboard-container {
+            display: none;
+            width: 90%;
+            max-width: 800px;
+            background: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 1px solid #0f3460;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: #e94560;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Kartu Jadwal */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .schedule-card {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #e94560;
+            transition: transform 0.2s;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .time {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+
+        .activity {
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Panel Data Admin */
+        .admin-panel {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .admin-panel h3 {
+            color: #e94560;
+            margin-bottom: 15px;
+        }
+
+        .user-list {
+            list-style: none;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .user-list li {
+            background: #1a1a2e;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 14px;
+            border-left: 3px solid #4caf50;
+        }
+
+        /* Animasi */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BAGIAN 1: FORM LOGIN / DAFTAR -->
+    <div id="auth-section" class="auth-container">
+        
+        <!-- Form Login -->
+        <div id="login-form">
+            <h2>Masuk Akun</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="user@contoh.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="******" required>
+                </div>
+                <div class="input-group">
+                    <label>Confirmation Password</label>
+                    <input type="password" id="Login-Confirmpass" placeholder="******" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Masuk</button>
+            </form>
+            <div class="toggle-link">
+                Belum punya akun? <a onclick="toggleAuth('register')">Daftar disini</a>
+            </div>
+        </div>
+
+        <!-- Form Daftar -->
+        <div id="register-form" style="display: none;">
+            <h2>Buat Akun Baru</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="reg-name" placeholder="Contoh: nama kamu" required>
+                </div>
+                <div class="input-group">
+                    <label>Umur kamu</label>
+                    <input type="age" id="reg-age" placeholder="contoh: 10 Tahun" required>
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" placeholder="user@contoh.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" placeholder="******" required>
+                </div>
+                <div class="input-group">
+                    <label>Confirmation Password</label>
+                    <input type="Confirmation Password" id="reg-Confirmpass" placeholder="******" requaired>
+                </div>
+                <button type="submit" class="btn btn-primary">Daftar & Simpan Data</button>
+            </form>
+            <div class="toggle-link">
+                Sudah punya akun? <a onclick="toggleAuth('login')">Login disini</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BAGIAN 2: JADWAL BELAJAR (DASHBOARD) -->
+    <div id="dashboard-section" class="dashboard-container">
+        <div class="header">
+            <div>
+                <h1>Halo, <span id="greeting-name">User</span>! 👋</h1>
+                <p style="color: #aaa;">Data Anda telah tersimpan di sistem.</p>
+            </div>
+            <button onclick="handleLogout()" class="logout-btn">Keluar (Logout)</button>
+        </div>
+
+        <div class="schedule-grid">
+            <div class="schedule-card">
+                <div class="time">19.00 - 20.00</div>
+                <div class="activity">Review Materi</div>
+                <div class="note">Persiapan belajar malam.</div>
+            </div>
+            <div class="schedule-card">
+                <div class="time">20.00 - 21.00</div>
+                <div class="activity">Deep Work</div>
+                <div class="note">Fokus belajar materi sulit.</div>
+            </div>
+            <div class="schedule-card">
+                <div class="time">21.00 - 21.15</div>
+                <div class="activity">Istirahat</div>
+                <div class="note">Minum air & peregangan.</div>
+            </div>
+            <div class="schedule-card">
+                <div class="time">21.15 - 22.15</div>
+                <div class="activity">Latihan Soal</div>
+                <div class="note">Terapkan ilmu yang didapat.</div>
+            </div>
+            <div class="schedule-card">
+                <div class="time">22.15 - 23.00</div>
+                <div class="activity">Review & Refleksi</div>
+                <div class="note">Ringkasan hari ini.</div>
+            </div>
+        </div>
+
+        <!-- Panel Admin Sederhana untuk Melihat Data -->
+        <div class="admin-panel">
+            <h3>📂 Data Pendaftar Terdaftar</h3>
+            <ul id="user-list-display" class="user-list">
+                <!-- Data akan muncul di sini -->
+            </ul>
+            <button onclick="clearData()" class="btn btn-secondary" style="width: auto; margin-top: 10px; font-size: 12px;">Reset Semua Data</button>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIKA DATABASE (LOCALSTORAGE) ---
+        const DB_KEY = 'users_database';
+
+        // Fungsi untuk mendapatkan data user dari LocalStorage
+        function getUsers() {
+            const users = localStorage.getItem(DB_KEY);
+            return users ? JSON.parse(users) : [];
+        }
+
+        // Fungsi untuk menyimpan data user ke LocalStorage
+        function saveUsers(users) {
+            localStorage.setItem(DB_KEY, JSON.stringify(users));
+        }
+
+        // --- LOGIKA UI ---
+
+        function toggleAuth(type) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+
+            if (type === 'register') {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            } else {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            }
+        }
+
+        // Fungsi Register (Menyimpan Data)
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+
+            // Cek apakah email sudah terdaftar
+            const users = getUsers();
+            const existingUser = users.find(u => u.email === email);
+
+            if (existingUser) {
+                alert("Email sudah terdaftar! Silakan login.");
+                toggleAuth('login');
+                return;
+            }
+
+            // Simpan data baru
+            const newUser = { name, email, pass, confirmpass };
+            users.push(newUser);
+            saveUsers(users);
+
+            alert(`Data Berhasil Disimpan!\nNama: ${name}\nEmail: ${email}\n\nSilakan Login.`);
+            
+            // Reset form dan pindah ke login
+            event.target.reset();
+            toggleAuth('login');
+        }
+
+        // Fungsi Login (Cek Data)
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const users = getUsers();
+            const user = users.find(u => u.email === email && u.pass === pass);
+
+            if (user) {
+                // Login Berhasil
+                document.getElementById('greeting-name').innerText = user.name;
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('dashboard-section').style.display = 'block';
+                document.getElementById('dashboard-section').classList.add('fade-in');
+                
+                // Update tampilan daftar user di dashboard
+                updateUserList();
+            } else {
+                alert("Email atau Password salah! Silakan daftar terlebih dahulu.");
+            }
+        }
+
+        // Fungsi Logout
+        function handleLogout() {
+            if(confirm("Apakah Anda yakin ingin keluar?")) {
+                document.getElementById('dashboard-section').style.display = 'none';
+                document.getElementById('auth-section').style.display = 'block';
+                document.getElementById('login-pass').value = '';
+            }
+        }
+
+        // Fungsi Update Tampilan Daftar User di Dashboard
+        function updateUserList() {
+            const users = getUsers();
+            const listElement = document.getElementById('user-list-display');
+            listElement.innerHTML = ''; // Kosongkan dulu
+
+            if (users.length === 0) {
+                listElement.innerHTML = '<li style="color: #aaa;">Belum ada data pendaftar.</li>';
+                return;
+            }
+
+            users.forEach(u => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${u.name}</strong> (${u.email})`;
+                listElement.appendChild(li);
+            });
+        }
+
+        // Fungsi Reset Data (Untuk Demo)
+        function clearData() {
+            if(confirm("Hapus semua data pendaftar?")) {
+                localStorage.removeItem(DB_KEY);
+                updateUserList();
+                alert("Data berhasil dihapus.");
+            }
+        }
+    </script>
+
+</body>
+</html>
